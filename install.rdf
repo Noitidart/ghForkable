@@ -20,7 +20,7 @@
 		</em:targetApplication>
 
 		<!-- Front End MetaData -->
-		<em:name>listen page load demo</em:name>
+		<em:name>ghForkable</em:name>
 		<em:description>This addon adds a "Fork" button to pages on GitHub that do not have one. (prompted by lack of button on own Gists)</em:description>
 		<em:creator>Noitidart</em:creator>
 		<em:iconURL/>

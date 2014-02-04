@@ -1,4 +1,5 @@
-javascript: (function () {
+function makeForkable() {
+	alert('making forkable 3');
 	var fork, present, star, button, form, forks, count;
 	$('.pagehead-actions li').each(function () {
 		var action = $(this).find('form').attr('action');
@@ -23,6 +24,7 @@ javascript: (function () {
 			return;
 		}
 		fork = $(star).clone();
+		fork.addClass('ghForkable_fork')
 	}
 	button = fork.find('.minibutton');
 	if (present) {
@@ -54,4 +56,6 @@ javascript: (function () {
 		});
 	}
 	$('.pagehead-actions li:last').parent().append(fork);
-}());
+}
+
+makeForkable();

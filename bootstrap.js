@@ -1,11 +1,10 @@
 const {interfaces: Ci,	utils: Cu} = Components;
 Cu.import('resource://gre/modules/Services.jsm');
-var selfPath;
 const chromePath = 'chrome://ghforkable/content/';
 const locationToMatch = /http.?:\/\/(.*?.)?github\./;
 
 function addDiv(theDoc) {
-	//Cu.reportError('addDiv');
+	Cu.reportError('addDiv');
 	if (!theDoc) {
 		Cu.reportError('no theDoc!')
 		//document not provided, it is undefined likely
@@ -13,9 +12,10 @@ function addDiv(theDoc) {
 	}
 	var location = (theDoc.location + '');
 	if (!locationToMatch.test(location)) {
+		Cu.reportError('location doesnt match = "' + location + '"');
 		return;
 	}
-	//Cu.reportError('theDoc location matches locationToMatch:' + theDoc.location)
+	Cu.reportError('theDoc location matches locationToMatch:' + theDoc.location)
 	if (!theDoc instanceof Ci.nsIDOMHTMLDocument) {
 		//not html document, so its likely an xul document
 		Cu.reportError('theDoc is not an HTML document, it is probably XUL, since i chose to add HTML element, i dont want to add to xul elements, so exit');
@@ -23,8 +23,8 @@ function addDiv(theDoc) {
 	}
 	removeDiv(theDoc);
 	var script = theDoc.createElement('script');
-	script.setAttribute('src', selfPath + 'inject.js');
-	script.setAttribute('id', selfPath + 'ghForkable_inject');
+	script.setAttribute('src', chromePath + 'inject.js');
+	script.setAttribute('id', 'ghForkable_inject');
 	theDoc.documentElement.appendChild(script);
 }
 
@@ -49,16 +49,34 @@ function removeDiv(theDoc) {
 	if (alreadyThere) {
 		alreadyThere.parentNode.removeChild(alreadyThere);
 	}
+	
+	var forkBtn = theDoc.querySelector('.ghForkable_fork');
+	if (forkBtn) {
+		forkBtn.parentNode.removeChild(forkBtn);
+	}
 }
 
 function listenPageLoad(event) {
 	var win = event.originalTarget.defaultView;
 	var doc = win.document;
+	Cu.reportError('page loaded loc = ' + doc.location);
 	if (win.frameElement) {
 		//its a frame
-		//Cu.reportError('a frame loaded');
+		Cu.reportError('its a frame');
+		return;//dont want to watch frames
 	}
 	addDiv(doc);
+}
+
+function listenPageShow(event) {
+	var win = event.originalTarget.defaultView;
+	var doc = win.document;
+	Cu.reportError('pageshowed ' + win.frameElement.location)
+	if (win.frameElement) {
+		//its a frame
+		Cu.reportError('its a frame');
+		return;//dont want to watch frames
+	}
 }
 
 /*start - windowlistener*/
@@ -195,8 +213,6 @@ function unloadFromContentWindowAndItsFrames(theWin) {
 }
 
 function startup(aData, aReason) {
-	selfPath = aData.resourceURI.spec;
-	Cu.reportError('selfPath = ' + selfPath);
 	windowListener.register();
 }
 

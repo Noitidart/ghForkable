@@ -1,5 +1,4 @@
 function makeForkable() {
-	alert('making forkable 3');
 	var fork, present, star, button, form, forks, count;
 	$('.pagehead-actions li').each(function () {
 		var action = $(this).find('form').attr('action');
@@ -30,7 +29,6 @@ function makeForkable() {
 	button = fork.find('.minibutton');
 	if (present) {
 		//button.focus();
-		console.log('fork already there, focused it');
 		return;
 	}
 	form = fork.find('form');
@@ -61,9 +59,7 @@ function makeForkable() {
 }
 
 function removePjaxListener() {
-	alert('removing');
 	$(document).off('pjax:end', makeForkable);
-	alert('removED');
 }
 
 makeForkable();

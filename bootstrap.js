@@ -1,52 +1,39 @@
 const {interfaces: Ci,	utils: Cu} = Components;
 Cu.import('resource://gre/modules/Services.jsm');
-const chromePath = 'chrome://ghforkable/content/';
-const locationToMatch = /http.?:\/\/(.*?.)?github\./;
+const pathChrome = 'chrome://ghforkable/content/';
+const pathContentaccessible = 'chrome://ghforkable_contentaccessible/content/';
+const ignoreFrames = true;
 
 function addDiv(theDoc) {
-	Cu.reportError('addDiv');
-	if (!theDoc) {
-		Cu.reportError('no theDoc!')
-		//document not provided, it is undefined likely
-		return;
-	}
-	var location = (theDoc.location + '');
-	if (!locationToMatch.test(location)) {
-		Cu.reportError('location doesnt match = "' + location + '"');
-		return;
-	}
-	Cu.reportError('theDoc location matches locationToMatch:' + theDoc.location)
-	if (!theDoc instanceof Ci.nsIDOMHTMLDocument) {
-		//not html document, so its likely an xul document
-		Cu.reportError('theDoc is not an HTML document, it is probably XUL, since i chose to add HTML element, i dont want to add to xul elements, so exit');
-		return;
-	}
-	removeDiv(theDoc);
+	Cu.reportError('addDiv host = ' + theDoc.location.host);
+	if (!theDoc) { Cu.reportError('no doc!'); return; } //document not provided, it is undefined likely
+	if (!theDoc instanceof Ci.nsIDOMHTMLDocument) { Cu.reportError('not html doc'); return; } //not html document, so its likely an xul document
+	if(!(theDoc.location && theDoc.location.host.indexOf('github.com') > -1)) { Cu.reportError('location not match host:' + theDoc.location.host); return; }
+	Cu.reportError('host pass');
+	removeDiv(theDoc, true);
 	var script = theDoc.createElement('script');
-	script.setAttribute('src', chromePath + 'inject.js');
+	script.setAttribute('src', pathContentaccessible + 'inject.js');
 	script.setAttribute('id', 'ghForkable_inject');
 	theDoc.documentElement.appendChild(script);
+	Cu.reportError('appended');
+	
 }
 
-function removeDiv(theDoc) {
+function removeDiv(theDoc, skipChecks) {
 	//Cu.reportError('removeDiv');
-	if (!theDoc) {
-		Cu.reportError('no theDoc!')
-		//document not provided, it is undefined likely
-		return;
+	if (!skipChecks) {
+		if (!theDoc) { Cu.reportError('no doc!'); return; } //document not provided, it is undefined likely
+		if (!theDoc instanceof Ci.nsIDOMHTMLDocument) { Cu.reportError('not html doc'); return; } //not html document, so its likely an xul document
+		if(!(theDoc.location && theDoc.location.host.indexOf('github.com') > -1)) { Cu.reportError('location not match host:' + theDoc.location.host); return; }
 	}
-	var location = (theDoc.location + '');
-	if (!locationToMatch.test(location)) {
-		return;
-	}
-	//Cu.reportError('theDoc location matches locationToMatch:' + theDoc.location)
-	if (!theDoc instanceof Ci.nsIDOMHTMLDocument) {
-		//not html document, so its likely an xul document
-		Cu.reportError('theDoc is not an HTML document, it is probably XUL, since i chose to add HTML element, i dont want to add to xul elements, so exit');
-		return;
-	}
+	
 	var alreadyThere = theDoc.querySelector('#ghForkable_inject');
 	if (alreadyThere) {
+		Cu.reportError('alreadyyyyyy');
+		var removePjaxListener = theDoc.defaultView.wrappedJSObject.removePjaxListener;
+		if (removePjaxListener) {
+			removePjaxListener();
+		}
 		alreadyThere.parentNode.removeChild(alreadyThere);
 	}
 	
@@ -63,20 +50,11 @@ function listenPageLoad(event) {
 	if (win.frameElement) {
 		//its a frame
 		Cu.reportError('its a frame');
-		return;//dont want to watch frames
+		if (ignoreFrames) {
+			return;//dont want to watch frames
+		}
 	}
 	addDiv(doc);
-}
-
-function listenPageShow(event) {
-	var win = event.originalTarget.defaultView;
-	var doc = win.document;
-	Cu.reportError('pageshowed ' + win.frameElement.location)
-	if (win.frameElement) {
-		//its a frame
-		Cu.reportError('its a frame');
-		return;//dont want to watch frames
-	}
 }
 
 /*start - windowlistener*/
@@ -186,7 +164,9 @@ function loadIntoContentWindowAndItsFrames(theWin) {
 		var doc = winArr[j].document;
 		//START - edit below here
 		addDiv(doc);
-		break; //uncomment this line if you don't want to add to frames
+		if (ignoreFrames) {
+			break;
+		}
 		//END - edit above here
 	}
 }
@@ -207,7 +187,9 @@ function unloadFromContentWindowAndItsFrames(theWin) {
 		var doc = winArr[j].document;
 		//START - edit below here
 		removeDiv(doc);
-		break; //uncomment this line if you don't want to remove from frames
+		if (ignoreFrames) {
+			break;
+		}
 		//END - edit above here
 	}
 }

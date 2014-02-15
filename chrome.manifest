@@ -1,1 +1,1 @@
-content ghforkable ./ contentaccessible=yes
+content ghforkable_contentaccessible ./content_scripts/ contentaccessible=yes

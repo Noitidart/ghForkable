@@ -21,14 +21,16 @@ function makeForkable() {
 	if (!fork) {
 		if (!star) {
 			//no star on this page so exit. this is not a page that can be starred so likely not forked
+			console.log('no star on this page so exit. this is not a page that can be starred so likely not forked');
 			return;
 		}
 		fork = $(star).clone();
-		fork.addClass('ghForkable_fork')
+		fork.addClass('ghForkable_fork');
 	}
 	button = fork.find('.minibutton');
 	if (present) {
-		button.focus();
+		//button.focus();
+		console.log('fork already there, focused it');
 		return;
 	}
 	form = fork.find('form');
@@ -58,4 +60,11 @@ function makeForkable() {
 	$('.pagehead-actions li:last').parent().append(fork);
 }
 
+function removePjaxListener() {
+	alert('removing');
+	$(document).off('pjax:end', makeForkable);
+	alert('removED');
+}
+
 makeForkable();
+$(document).on('pjax:end', makeForkable)
